@@ -1,4 +1,4 @@
-package com.testest.apisimulacao.entity;
+package com.testest.apisimulacao.model;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

@@ -1,9 +1,8 @@
 package com.testest.apisimulacao.controller;
 
-import com.testest.apisimulacao.entity.Usuario;
+import com.testest.apisimulacao.model.Usuario;
 import com.testest.apisimulacao.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
