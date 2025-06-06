@@ -1,8 +1,8 @@
 package com.testest.apisimulacao.repository;
 
-import com.testest.apisimulacao.model.PessoaJuridica;
+import com.testest.apisimulacao.model.Cliente;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface PessoaJuridicaRepository  extends JpaRepository<PessoaJuridica, Long> {
+public interface PessoaJuridicaRepository  extends JpaRepository<Cliente, Long> {
 }

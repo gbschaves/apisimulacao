@@ -18,9 +18,11 @@ public class Cliente {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String nome;
-    private Endereco enderecolo;
+    @Embedded
+    private Endereco endereco;
     private String senha;
     private String email;
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Conta> contas = new ArrayList<>();
 
 }

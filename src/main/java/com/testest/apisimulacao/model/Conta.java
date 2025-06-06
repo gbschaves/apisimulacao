@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "contas")
-@Embeddable
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,6 +19,8 @@ public class Conta {
     @Column(nullable = false, unique = true)
     private Boolean status;
     private Double saldo;
+    @ManyToOne
+    private Cliente cliente;
 
 }
 
