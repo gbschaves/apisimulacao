@@ -1,4 +1,4 @@
-package com.testest.apisimulacao.model;
+package com.testest.apisimulacao.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -6,8 +6,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Embeddable
+// Para getters, setters, toString, equals, hashCode
 @Data
+// Para constructors vazios
 @NoArgsConstructor
+// Para constructors com as propriedades
 @AllArgsConstructor
 public class Endereco {
 
