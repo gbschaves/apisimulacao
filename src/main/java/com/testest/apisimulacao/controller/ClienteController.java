@@ -37,48 +37,50 @@ public class ClienteController {
                     schema = @Schema(implementation = CriarClienteRequestDTO.class),
                     examples = {
 
-                            // Exemplos de CPF
+                            // Exemplos de sucesso
                             @ExampleObject(name = "Sucesso - Cadastro CPF",
 
                                     summary = "Exemplo de payload para cadastrar um cliente CPF.",
 
                                     externalValue = "/openapi-examples/cliente-cpf-sucesso.json"),
-
-                            @ExampleObject(name = "Exemplo de payload com com erro - CPF com tamanho inválido",
-
-                                    summary = "Exemplo que causará um erro de tamanho de CPF 400 (Bad Request).",
-
-                                    externalValue = "/openapi-examples/cliente-cpf-erro-tamanho.json"),
-
-                            @ExampleObject(name = "Exemplo de payload com erro - CPF inválido",
-
-                                    summary = "Exemplo que causará um erro de CPF inválido 400 (Bad Request).",
-
-                                    externalValue = "/openapi-examples/cliente-cpf-erro-invalido.json"),
-
-                            // Exemplos de CNPJ
                             @ExampleObject(name = "Sucesso - Cadastro CNPJ",
 
                                     summary = "Exemplo de payload para cadastrar um cliente CNPJ.",
 
                                     externalValue = "/openapi-examples/cliente-cnpj-sucesso.json"),
+                            @ExampleObject(name = "Exemplo de payload para cadastrar um cliente CNPJ com uma conta inativa.",
 
-                            @ExampleObject(name = "Exemplo de payload com erro - CNPJ com tamanho inválido",
+                                    summary = "Exemplo de payload para cadastrar um cliente CNPJ com uma conta inativa.",
+
+                                    externalValue = "/openapi-examples/cliente-cnpj-conta-inativa-sucesso.json"),
+
+
+
+                            // Exemplos de erros
+                            @ExampleObject(name = "Exemplo de payload com com erro - CPF com Tamanho Inválido",
+
+                                    summary = "Exemplo que causará um erro de tamanho de CPF 400 (Bad Request).",
+
+                                    externalValue = "/openapi-examples/cliente-cpf-erro-tamanho.json"),
+
+                            @ExampleObject(name = "Exemplo de payload com erro - CPF Inválido",
+
+                                    summary = "Exemplo que causará um erro de CPF inválido 400 (Bad Request).",
+
+                                    externalValue = "/openapi-examples/cliente-cpf-erro-invalido.json"),
+
+                            @ExampleObject(name = "Exemplo de payload com erro - CNPJ com Tamanho Inválido",
 
                                     summary = "Exemplo que causará um erro de tamanho de CNPJ 400 (Bad Request).",
 
                                     externalValue = "/openapi-examples/cliente-cnpj-erro-tamanho.json"),
 
-                            @ExampleObject(name = "Exemplo de payload com erro - CNPJ inválido",
+                            @ExampleObject(name = "Exemplo de payload com erro - CNPJ Inválido",
 
                                     summary = "Exemplo que causará um erro de CNPJ inválido 400 (Bad Request).",
 
                                     externalValue = "/openapi-examples/cliente-cnpj-erro-invalido.json"),
-                            @ExampleObject(name = "Exemplo de payload para cadastrar um cliente CNPJ com uma conta inativa.",
 
-                                    summary = "Exemplo de payload para cadastrar um cliente CNPJ.",
-
-                                    externalValue = "/openapi-examples/cliente-cnpj-conta-inativa-sucesso.json"),
 
                     }))
     )

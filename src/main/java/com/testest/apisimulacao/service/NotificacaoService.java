@@ -2,10 +2,12 @@ package com.testest.apisimulacao.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class NotificacaoService {
@@ -32,7 +34,10 @@ public class NotificacaoService {
             log.error("FALHA AO ENVIAR NOTIFICAÇÃO, SERVIÇO INDISPONÍVEL: {}", e.getMessage());
 
             // Retorna uma mensagem de erro específica.
-            return "{\"status\": \"Serviço de notificação indisponível\"}";
+            throw new ResponseStatusException(
+                    HttpStatus.SERVICE_UNAVAILABLE, // Código de erro 503
+                    "Serviço de notificação indisponível. A transação foi cancelada."
+            );
         }
     }
 }

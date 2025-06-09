@@ -1,5 +1,6 @@
 package com.testest.apisimulacao.controller;
 
+import com.testest.apisimulacao.dto.TransacaoCompletaResponseDTO;
 import com.testest.apisimulacao.dto.TransacaoRequestDTO;
 import com.testest.apisimulacao.exception.ErrorResponse;
 import com.testest.apisimulacao.service.TransacaoService;
@@ -34,17 +35,21 @@ public class TransacaoController {
                             @ExampleObject(name = "Sucesso",
                                     summary = "Exemplo de payload para transação bem-sucedida.",
                                     externalValue = "/openapi-examples/transacao-sucesso.json"),
+
                             @ExampleObject(name = "Exemplo de payload com erro - Saldo Insuficiente",
-                                    summary = "Exemplo de payload causara um erro de negócio 422.",
+                                    summary = "Exemplo de payload causara um erro de saldo insuficiente 422.",
                                     externalValue = "/openapi-examples/transacao-erro-saldo-insuficiente.json"),
+
                             @ExampleObject(name = "Exemplo de payload com erro - Conta Inativa",
-                                    summary = "Exemplo de payload causara um erro de negócio 422.",
+                                    summary = "Exemplo de payload causara um erro de conta inativa 422.",
                                     externalValue = "/openapi-examples/transacao-erro-conta-inativa.json"),
+
                             @ExampleObject(name = "Exemplo de payload com erro - Conta não Encontrada",
-                                    summary = "Exemplo de payload causara um erro 404.",
+                                    summary = "Exemplo de payload causara um conta não encontrada 404.",
                                     externalValue = "/openapi-examples/transacao-erro-conta-nao-encontrada.json"),
+
                             @ExampleObject(name = "Exemplo de payload com erro - Agência Inválida",
-                                    summary = "Exemplo de payload causara um erro de validação 400.",
+                                    summary = "Exemplo de payload causara um erro de agência inválida 400.",
                                     externalValue = "/openapi-examples/transacao-erro-agencia-invalida.json")
                     }))
     )
@@ -58,8 +63,8 @@ public class TransacaoController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PostMapping("/transacoes/realizar")
-    public ResponseEntity<Void> realizarTransacao(@Valid @org.springframework.web.bind.annotation.RequestBody TransacaoRequestDTO request) {
-        transacaoService.realizarTransacao(request);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<TransacaoCompletaResponseDTO> realizarTransacao(@Valid @org.springframework.web.bind.annotation.RequestBody TransacaoRequestDTO request) {
+        TransacaoCompletaResponseDTO response = transacaoService.realizarTransacao(request);
+        return ResponseEntity.ok(response);
     }
 }
