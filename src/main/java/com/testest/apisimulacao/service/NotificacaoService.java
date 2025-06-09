@@ -36,7 +36,7 @@ public class NotificacaoService {
             // Retorna uma mensagem de erro específica.
             throw new ResponseStatusException(
                     HttpStatus.SERVICE_UNAVAILABLE, // Código de erro 503
-                    "Serviço de notificação indisponível. A transação foi cancelada."
+                    "Serviço indisponível. A transação foi cancelada."
             );
         }
     }
