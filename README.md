@@ -1,173 +1,145 @@
+-----
+
 # API de Simulação de Cadastro e Transações Bancárias
 
-![Java](https://img.shields.io/badge/Java-24-blue)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.0-brightgreen)
-![H2 Database](https://img.shields.io/badge/H2%20Database-In%20Memory-orange)
-![Swagger UI](https://img.shields.io/badge/Swagger%20UI-2.8.8-blueviolet)
-![Maven](https://img.shields.io/badge/Maven-3.9.9-red)
-![Lombok](https://img.shields.io/badge/Lombok-Enabled-yellow)
-![Spring Security](https://img.shields.io/badge/Spring%20Security-Enabled-green)
+    
 
----
+-----
 
 ## 📋 Sumário
 
-- [Visão Geral do Projeto](#-visão-geral-do-projeto)
-- [Tecnologias Utilizadas](#-tecnologias-utilizadas)
-- [Pré-requisitos](#-pré-requisitos)
-- [Como Executar a Aplicação](#-como-executar-a-aplicação)
-- [Acessando a Aplicação](#-acessando-a-aplicação)
-- [Endpoints da API](#-endpoints-da-api)
-- [Estrutura do Projeto](#-estrutura-do-projeto)
-- [Considerações Finais](#-considerações-finais)
+  - [Visão Geral do Projeto](https://www.google.com/search?q=%23-vis%C3%A3o-geral-do-projeto)
+  - [Tecnologias Utilizadas](https://www.google.com/search?q=%23-tecnologias-utilizadas)
+  - [Principais Funcionalidades](https://www.google.com/search?q=%23-principais-funcionalidades)
+  - [Fluxo da Aplicação](https://www.google.com/search?q=%23-fluxo-da-aplica%C3%A7%C3%A3o)
+  - [Como Executar](https://www.google.com/search?q=%23-como-executar)
+  - [Acessando a Aplicação](https://www.google.com/search?q=%23-acessando-a-aplica%C3%A7%C3%A3o)
+  - [Estrutura do Projeto](https://www.google.com/search?q=%23-estrutura-do-projeto)
 
----
+-----
 
 ## 🎯 Visão Geral do Projeto
 
-Esta API foi desenvolvida para simular processos de **cadastro de clientes** e **transações bancárias**. O objetivo é fornecer um ambiente para testar e entender como as operações de cliente e conta podem ser gerenciadas em um sistema backend, incluindo validações de documentos (CPF/CNPJ), gerenciamento de saldo e notificação de transações.
+Esta API RESTful, desenvolvida com **Java** e **Spring Boot**, simula operações bancárias essenciais, como cadastro de clientes e transferências entre contas. O projeto foi desenhado para ser um exemplo prático de uma arquitetura de microsserviços robusta, com separação de responsabilidades, tratamento de exceções global e documentação interativa.
 
-A aplicação utiliza o Spring Boot para facilitar o desenvolvimento, um banco de dados H2 em memória para persistência de dados e Swagger UI para documentação interativa dos endpoints.
+A regra de negócio principal para transações é atômica: a transferência de saldo e a notificação para ambos os clientes são tratadas como uma única operação. **Se o serviço externo de notificação falhar, a transação inteira é revertida (rollback)**, garantindo a consistência dos dados.
 
----
+-----
 
 ## 🚀 Tecnologias Utilizadas
 
-* **Java 24**: Linguagem de programação principal.
-* **Spring Boot 3.5.0**: Framework para construção de aplicações Java robustas e escaláveis.
-* **Spring Data JPA**: Para abstração e persistência de dados.
-* **H2 Database**: Banco de dados relacional em memória, ideal para desenvolvimento e testes.
-* **Maven 3.9.9**: Ferramenta para gerenciamento de dependências e build.
-* **Lombok**: Reduz a verbosidade do código, gerando automaticamente getters, setters e construtores.
-* **Springdoc-OpenAPI (Swagger UI)**: Para geração automática e interativa da documentação da API.
-* **Spring Security**: Para configuração de segurança e acesso público aos endpoints do Swagger.
-* **Caelum Stella Core**: Biblioteca utilizada para validação de CPF e CNPJ.
-* **RestTemplate**: Para simular o envio de notificações a um serviço externo.
+  - **Java 24**: Linguagem de programação principal.
+  - **Spring Boot 3.5.0**: Framework para construção de aplicações Java robustas e escaláveis.
+  - **Spring Data JPA**: Para abstração e persistência de dados.
+  - **Spring Security**: Para configuração de segurança da aplicação.
+  - **H2 Database**: Banco de dados relacional em memória para agilidade no desenvolvimento.
+  - **Maven**: Ferramenta para gerenciamento de dependências e build.
+  - **Lombok**: Reduz a verbosidade do código Java.
+  - **Springdoc-OpenAPI**: Para geração automática da documentação interativa da API com Swagger UI.
+  - **Caelum Stella Core**: Biblioteca para validação de documentos brasileiros (CPF e CNPJ).
 
----
+-----
 
-## ✅ Pré-requisitos
+## ✨ Principais Funcionalidades
 
-Antes de iniciar, certifique-se de ter as seguintes ferramentas instaladas em sua máquina:
+  - **Cadastro de Clientes**: Permite criar clientes com CPF ou CNPJ, com validação de formato e unicidade.
+  - **Criação de Contas**: Associa uma ou mais contas a um cliente no momento do cadastro.
+  - **Transferência entre Contas**: Realiza transferências financeiras com validação de saldo, status da conta e agência.
+  - **Notificação Externa**: Simula o envio de notificações para um serviço externo após cada transação.
+  - **Transações Atômicas**: Garante que a transferência e a notificação ocorram com sucesso, ou a operação inteira é desfeita.
+  - **Tratamento Global de Exceções**: Fornece respostas de erro claras e padronizadas para o cliente da API.
 
-* **Java Development Kit (JDK) 24** ou superior.
-* **Maven 3.9.9** ou superior.
-* Uma IDE de sua escolha (IntelliJ IDEA, Eclipse, VS Code, etc.).
+-----
 
----
+## 🔄 Fluxo da Aplicação
 
-## ▶️ Como Executar a Aplicação
+### Fluxo de Cadastro de Cliente
 
-Siga os passos abaixo para clonar o repositório e executar a aplicação:
+1.  **Requisição**: O cliente envia um `POST` para `/api/cadastro/clientes` com um `CriarClienteRequestDTO` no corpo.
+2.  **Controller (`ClienteController`)**: Recebe a requisição, valida os dados de entrada (`@Valid`) e a encaminha para o `ClienteService`.
+3.  **Service (`ClienteService`)**:
+      - Valida o formato do documento (CPF/CNPJ) e sua unicidade no banco.
+      - Criptografa a senha do cliente.
+      - Mapeia o DTO para as entidades `Cliente`, `Endereco` e `Conta`.
+      - Salva o novo cliente e suas contas associadas no banco de dados em uma única transação.
+4.  **Resposta**: O `ClienteService` retorna um `ClienteResponseDTO` com os dados do cliente criado, e o `ClienteController` envia a resposta com status `201 Created`.
+
+### Fluxo de Transação
+
+1.  **Requisição**: O cliente envia um `POST` para `/api/transacoes/realizar` com um `TransacaoRequestDTO`.
+2.  **Controller (`TransacaoController`)**: Recebe a requisição, valida os dados e a repassa para o `TransacaoService`.
+3.  **Service (`TransacaoService`)**:
+      - Inicia um bloco transacional (`@Transactional`).
+      - Busca as contas de origem e destino.
+      - Valida as regras de negócio (contas ativas, saldo suficiente, agências correspondentes).
+      - Atualiza os saldos em memória.
+      - Chama o `NotificacaoService` para notificar ambas as contas.
+4.  **Notificação (`NotificacaoService`)**:
+      - Tenta enviar a notificação para o endpoint externo (`https://run.mocky.io...`).
+      - **Se a chamada falhar**: Lança uma `ResponseStatusException`.
+5.  **Resultado da Transação**:
+      - **Se a notificação for bem-sucedida**: O `TransacaoService` completa o método sem erros, e o `@Transactional` **confirma (commit)** as alterações de saldo no banco.
+      - **Se a notificação falhar**: A exceção lançada pelo `NotificacaoService` interrompe o `TransacaoService`, e o `@Transactional` **reverte (rollback)** as alterações de saldo. Nada é salvo no banco.
+6.  **Resposta**:
+      - **Em caso de sucesso**: O `TransacaoController` retorna uma resposta `200 OK`.
+      - **Em caso de falha**: O `GlobalExceptionHandler` captura a exceção e retorna uma resposta de erro padronizada (ex: `503 Service Unavailable`).
+
+-----
+
+## ▶️ Como Executar
 
 1.  **Clone o repositório:**
     ```bash
-    git clone [https://github.com/gbschaves/apisimulacao.git](https://github.com/gbschaves/apisimulacao.git)
+    git clone https://github.com/gbschaves/apisimulacao.git
     ```
-
 2.  **Navegue até o diretório do projeto:**
     ```bash
     cd apisimulacao
     ```
-
-3.  **Compile e execute a aplicação usando Maven:**
+3.  **Compile e execute com Maven:**
     ```bash
     mvn spring-boot:run
     ```
-    A aplicação será iniciada na porta padrão `8080`.
+    A aplicação será iniciada na porta `8080`.
 
----
+-----
 
 ## 🌐 Acessando a Aplicação
 
 ### Documentação da API (Swagger UI)
-A documentação interativa da API está disponível no Swagger UI, onde você pode testar os endpoints diretamente no navegador.
 
-* **URL:** `http://localhost:8080/swagger-ui.html`
+Acesse a documentação interativa para visualizar e testar todos os endpoints.
+
+  * **URL:** `http://localhost:8080/swagger-ui.html`
 
 ### Console do Banco de Dados (H2)
-Você pode acessar o console do H2 para visualizar os dados e tabelas em tempo real.
 
-* **URL:** `http://localhost:8080/h2-console`
-* **Credenciais (padrão):**
-    * **JDBC URL**: `jdbc:h2:mem:testdb`
-    * **User Name**: `dev`
-    * **Password**: (deixar em branco)
+Acesse o console do H2 para visualizar os dados em tempo real.
 
----
+  * **URL:** `http://localhost:8080/h2-console`
+  * **Credenciais:**
+      * **JDBC URL**: `jdbc:h2:mem:testdb`
+      * **User Name**: `dev`
+      * **Password**: (deixar em branco)
 
-## Endpoints da API
-
-### Clientes
-
-#### `POST /api/cadastro/clientes`
-* **Descrição**: Cadastra um novo cliente com informações de endereço e contas bancárias iniciais.
-* **Requisição**: `CriarClienteRequestDTO` com os seguintes campos:
-    * `nome` (String, obrigatório)
-    * `tipoDocumento` (Enum: `CPF` ou `CNPJ`, obrigatório)
-    * `documento` (String, obrigatório)
-    * `senha` (String, mínimo 6 caracteres, obrigatório)
-    * `endereco` (`EnderecoRequestDTO`, obrigatório)
-    * `contas` (Lista de `ContaRequestDTO`, opcional)
-* **Respostas**:
-    * `201 Created`: Cliente cadastrado com sucesso.
-    * `400 Bad Request`: Dados inválidos (e.g., CPF com formato incorreto).
-    * `409 Conflict`: Documento já cadastrado.
-
-#### `GET /api/listar/clientes`
-* **Descrição**: Lista todos os clientes cadastrados no sistema.
-* **Respostas**:
-    * `200 OK`: Retorna uma lista de `ClienteResponseDTO`.
-
-### Transações
-
-#### `POST /api/transacoes/realizar`
-* **Descrição**: Realiza uma transferência monetária entre duas contas.
-* **Requisição**: `TransacaoRequestDTO` com os seguintes campos:
-    * `idContaOrigem` (Long, obrigatório)
-    * `agenciaOrigem` (String, obrigatório)
-    * `idContaDestino` (Long, obrigatório)
-    * `agenciaDestino` (String, obrigatório)
-    * `valor` (BigDecimal, positivo, obrigatório)
-* **Respostas**:
-    * `200 OK`: Transação realizada com sucesso.
-    * `400 Bad Request`: Requisição inválida (e.g., agência não confere).
-    * `404 Not Found`: Conta de origem ou destino não encontrada.
-    * `422 Unprocessable Entity`: Regra de negócio violada (e.g., saldo insuficiente, conta inativa).
-
----
+-----
 
 ## 📂 Estrutura do Projeto
 
-A estrutura do projeto segue as convenções do Spring Boot, com pacotes bem definidos para cada responsabilidade:
-
 ```
-src
-├── main
-│   ├── java/com/testest/apisimulacao
-│   │   ├── ApisimulacaoApplication.java  # Ponto de entrada
-│   │   ├── config/                     # Configurações (Swagger, Security)
-│   │   ├── controller/                 # Controladores REST
-│   │   ├── dto/                        # Objetos de Transferência de Dados
-│   │   ├── entity/                     # Entidades de persistência
-│   │   ├── event/                      # Eventos da aplicação
-│   │   ├── exception/                  # Tratamento de exceções
-│   │   ├── listener/                   # Listeners de eventos
-│   │   ├── repository/                 # Repositórios (acesso a dados)
-│   │   └── service/                    # Lógica de negócio
-│   └── resources
-│       ├── application.properties      # Configurações da aplicação
-│       └── openapi-examples/           # Exemplos de payloads para Swagger
-└── test
+src/main
+├── java/com/testest/apisimulacao
+│   ├── ApisimulacaoApplication.java  # Ponto de entrada da aplicação
+│   ├── config/                     # Classes de configuração (Swagger, Security, Beans)
+│   ├── controller/                 # Controladores REST que expõem os endpoints
+│   ├── dto/                        # Data Transfer Objects para controlar os dados de entrada e saída da API
+│   ├── entity/                     # Entidades JPA que mapeiam as tabelas do banco
+│   ├── event/                      # Classes de eventos para arquitetura assíncrona (atualmente inativas)
+│   ├── exception/                  # Handler global de exceções e classes de erro
+│   ├── listener/                   # Listeners de eventos (atualmente inativos)
+│   ├── repository/                 # Interfaces do Spring Data JPA para acesso ao banco
+│   └── service/                    # Classes que contêm a lógica de negócio
+└── resources
+    ├── application.properties      # Configurações principais da aplicação
+    └── openapi-examples/           # Exemplos de JSON para a documentação do Swagger
 ```
-
----
-
-## ✨ Considerações Finais
-
-Este projeto serve como um exemplo prático de uma API RESTful utilizando Spring Boot, com foco em:
-
-* **Desenvolvimento Rápido**: Graças à simplicidade e poder do Spring Boot.
-* **Validação de Dados**: Uso de `@Valid` e da biblioteca `Caelum Stella` para garantir a integridade dos dados.
-* **Tratamento de Exceções**: Implementação de `@ControllerAdvice` para um tratamento de erros global e consistente.
-* **Documentação Interativa**: Facilidade de uso e teste através do `Swagger UI` com exemplos claros.
