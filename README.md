@@ -31,13 +31,6 @@ A aplicação utiliza o Spring Boot para facilitar o desenvolvimento, um banco d
 
 ---
 
-## Caso queira acessar o h2
-acesse /h2-console
-Note que o usuário padrão é sa, porém nessta aplicação foi modificado para "dev"
-e no campo referente ao url do banco, coloque "org.h2.Driver".
-
----
-
 ## 🚀 Tecnologias Utilizadas
 
 * **Java 24**: Linguagem de programação principal.
