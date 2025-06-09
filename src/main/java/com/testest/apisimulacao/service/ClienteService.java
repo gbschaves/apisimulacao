@@ -1,113 +1,142 @@
 package com.testest.apisimulacao.service;
 
+import com.testest.apisimulacao.dto.ClienteResponseDTO;
+import com.testest.apisimulacao.dto.CriarClienteRequestDTO;
 import com.testest.apisimulacao.entity.Cliente;
 import com.testest.apisimulacao.entity.Conta;
+import com.testest.apisimulacao.entity.Endereco;
 import com.testest.apisimulacao.entity.TipoDocumento;
 import com.testest.apisimulacao.repository.ClienteRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
+
 import br.com.caelum.stella.validation.CPFValidator;
 import br.com.caelum.stella.validation.CNPJValidator;
 import br.com.caelum.stella.validation.InvalidStateException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ClienteService {
 
-    @Autowired
-    private ClienteRepository clienteRepository;
+    private static final Logger log = LoggerFactory.getLogger(ClienteService.class);
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
+    private final ClienteRepository clienteRepository;
+    private final PasswordEncoder passwordEncoder;
     private final CPFValidator cpfValidator = new CPFValidator();
     private final CNPJValidator cnpjValidator = new CNPJValidator();
 
-    public Cliente cadastrarCliente(Cliente cliente) {
+    public ClienteService(ClienteRepository clienteRepository, PasswordEncoder passwordEncoder) {
+        this.clienteRepository = clienteRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
-        //* Código responsável para verificação do tipo de documento e validação do documento utilizando a biblioteca caelum-stella-core
+    @Transactional
+    public ClienteResponseDTO cadastrarCliente(CriarClienteRequestDTO dto) {
+        // Validações iniciais
+        String documentoLimpo = validarFormatoDocumento(dto.tipoDocumento(), dto.documento());
 
-        // 1. Remover formatação para validação e armazenamento
-        String documentoLimpo = cliente.getDocumento()
-                .replaceAll("[^0-9]", ""); // Remove tudo que não for dígito
-        cliente.setDocumento(documentoLimpo); // Atualiza o documento no objeto cliente
-
-        // 2. Validar com base no tipoDocumento
-        if (cliente.getTipoDocumento() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tipo de documento é obrigatório.");
+        if (clienteRepository.existsByDocumento(documentoLimpo)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Documento (CPF/CNPJ) já cadastrado.");
         }
 
-        if (cliente.getTipoDocumento() == TipoDocumento.CPF) {
-            if (cliente.getDocumento().length() != 11) {
+        // Mapeamento do DTO para a entidade
+        Cliente novoCliente = new Cliente();
+        novoCliente.setNome(dto.nome());
+        novoCliente.setTipoDocumento(dto.tipoDocumento());
+        novoCliente.setDocumento(documentoLimpo);
+        novoCliente.setSenha(passwordEncoder.encode(dto.senha()));
+
+        if (dto.endereco() != null) {
+            Endereco endereco = new Endereco();
+            endereco.setEndereco(dto.endereco().endereco());
+//            endereco.setNumero(dto.endereco().numero());
+//            endereco.setComplemento(dto.endereco().complemento());
+//            endereco.setBairro(dto.endereco().bairro());
+//            endereco.setCidade(dto.endereco().cidade());
+//            endereco.setUf(dto.endereco().uf());
+//            endereco.setCep(dto.endereco().cep());
+            novoCliente.setEndereco(endereco);
+        }
+
+        if (dto.contas() != null && !dto.contas().isEmpty()) {
+            List<Conta> novasContas = dto.contas().stream().map(contaDto -> {
+                Conta novaConta = new Conta();
+                novaConta.setAgencia(contaDto.agencia());
+                novaConta.setSaldo(contaDto.saldoInicial());
+                boolean statusDaConta = contaDto.status() != null ? contaDto.status() : true;
+                novaConta.setStatus(statusDaConta);
+                novaConta.setCliente(novoCliente);
+                return novaConta;
+            }).collect(Collectors.toList());
+            novoCliente.setContas(novasContas);
+        }
+
+        // Salvar no banco
+        Cliente clienteSalvo = clienteRepository.save(novoCliente);
+
+
+
+        // Resposta final
+        String agencias = clienteSalvo.getContas() != null && !clienteSalvo.getContas().isEmpty() ?
+                clienteSalvo.getContas().stream()
+                        .map(Conta::getAgencia) // Pega a agência de cada conta
+                        .collect(java.util.stream.Collectors.joining(", ")) : // Junta todas as agências com ", "
+                "nenhuma"; // Se não houver contas
+
+        String mensagemDeSucesso = String.format(
+                "Cliente '%s' (ID: %d) cadastrado com sucesso. Total de %d conta(s): %s.",
+                clienteSalvo.getNome(),
+                clienteSalvo.getId(),
+                clienteSalvo.getContas() != null ? clienteSalvo.getContas().size() : 0,
+                agencias // Adiciona a string de agências aqui
+        );
+        return new ClienteResponseDTO(clienteSalvo, mensagemDeSucesso);
+    }
+
+    public List<ClienteResponseDTO> listarClientes() {
+        return clienteRepository.findAll()
+                .stream()
+                .map(ClienteResponseDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    // Metodo de validação
+    private String validarFormatoDocumento(TipoDocumento tipo, String documento) {
+        if (tipo == null || documento == null || documento.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tipo e número do documento são obrigatórios.");
+        }
+        String documentoLimpo = documento.replaceAll("[^0-9]", "");
+
+        if (tipo == TipoDocumento.CPF) {
+            if (documentoLimpo.length() != 11) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CPF deve conter 11 dígitos.");
             }
             try {
-                cpfValidator.assertValid(cliente.getDocumento());
+                cpfValidator.assertValid(documentoLimpo);
             } catch (InvalidStateException e) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CPF inválido.");
             }
-        } else if (cliente.getTipoDocumento() == TipoDocumento.CNPJ) {
-            if (cliente.getDocumento().length() != 14) {
+        } else if (tipo == TipoDocumento.CNPJ) {
+            if (documentoLimpo.length() != 14) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CNPJ deve conter 14 dígitos.");
             }
             try {
-                cnpjValidator.assertValid(cliente.getDocumento());
+                cnpjValidator.assertValid(documentoLimpo);
             } catch (InvalidStateException e) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CNPJ inválido.");
             }
         } else {
+
+            // fallback
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tipo de documento desconhecido.");
         }
-
-        //* Código responsável para implementação de conversão de HASH para garantir a segurança da conta utilizando a biblioteca spring-boot-starter-security
-        String senhaPura = cliente.getSenha();
-
-        String senhaHash = passwordEncoder.encode(senhaPura);
-
-        cliente.setSenha(senhaHash);
-
-        // Garantir que as contas sejam cadastradas no cliente atual
-        if (cliente.getContas() != null && !cliente.getContas().isEmpty()) {
-            for (Conta conta : cliente.getContas()) {
-                conta.setCliente(cliente);
-            }
-        }
-
-        //* Código responsável para tratar o erro do tipo CONFLICT / duplicidade vindo do banco de dados
-        try {
-            return clienteRepository.save(cliente);
-        } catch (DataIntegrityViolationException e) {
-            String errorMessage = e.getRootCause() != null ? e.getRootCause().getMessage() : e.getMessage();
-
-            // MENSAGEM DO H2
-            if (errorMessage != null) {
-                String lowerCaseErrorMessage = errorMessage.toLowerCase();
-
-                if (lowerCaseErrorMessage.contains("unique index or primary key violation")) {
-                    // Identificar se é a restrição de documento ou agência
-                    if (lowerCaseErrorMessage.contains("numero_documento")) {
-                        throw new ResponseStatusException(HttpStatus.CONFLICT, "Documento (CPF/CNPJ) já cadastrado.");
-                    }
-                    if (lowerCaseErrorMessage.contains("agencia") || lowerCaseErrorMessage.contains("uk_agencia")) {
-                        throw new ResponseStatusException(HttpStatus.CONFLICT, "Agência de conta já cadastrada.");
-                    }
-                    // fallback
-                    throw new ResponseStatusException(HttpStatus.CONFLICT, "Conflito de dados: um registro único já existe.");
-                }
-            }
-            // Outra violação de integridade, 500
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro de integridade de dados: " + e.getMessage());
-        }
-
-    }
-
-
-    public List<Cliente> listarClientes() {
-        return clienteRepository.findAll(); // A chamada para o repositório
+        return documentoLimpo;
     }
 }

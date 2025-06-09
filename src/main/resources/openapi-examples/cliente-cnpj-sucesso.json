@@ -1,0 +1,19 @@
+{
+  "nome": "Tecnologia e Soluções Futuras Ltda",
+  "tipoDocumento": "CNPJ",
+  "documento": "04.796.448/0001-14",
+  "senha": "senhaEmpresa!@#",
+  "endereco": {
+    "endereco": "Avenida Brigadeiro Faria Lima"
+  },
+  "contas": [
+    {
+      "agencia": "AG-TEC-MATRIZ",
+      "saldoInicial": 25000.00
+    },
+    {
+      "agencia": "AG-TEC-INVEST",
+      "saldoInicial": 150000.75
+    }
+  ]
+}

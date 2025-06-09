@@ -1,0 +1,15 @@
+{
+  "nome": "Juliana Martins",
+  "tipoDocumento": "CPF",
+  "documento": "549.455.720-030",
+  "senha": "juliana@2025",
+  "endereco": {
+    "endereco": "Rua Oscar Freire"
+  },
+  "contas": [
+    {
+      "agencia": "AG-JULIANA-01",
+      "saldoInicial": 5500.00
+    }
+  ]
+}
